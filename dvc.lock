@@ -9,8 +9,13 @@ stages:
       size: 94274
     - path: src/preprocess.py
       hash: md5
-      md5: f12054d24469c2889dc9e6f049a03126
-      size: 3038
+      md5: b1357bfaec45902355d5afc1ebad501b
+      size: 2519
+    params:
+      params.yaml:
+        preprocess:
+          test_size: 0.2
+          random_state: 42
     outs:
     - path: data/processed/X_test.csv
       hash: md5
@@ -28,6 +33,14 @@ stages:
       hash: md5
       md5: 6aae75c3957ef13ac4d0597ef859d5ff
       size: 1606
+    - path: models/feature_columns.json
+      hash: md5
+      md5: f5141b4fd45225cd8894dc7eef98c624
+      size: 307
+    - path: models/scaler.pkl
+      hash: md5
+      md5: c3bd06d3f19c4b58bd8521a02e967cc8
+      size: 1423
   train:
     cmd: python src/train.py
     deps:
@@ -41,13 +54,21 @@ stages:
       size: 1606
     - path: src/train.py
       hash: md5
-      md5: 68f6b4c83e315ac5f8feee6d5df2d815
-      size: 2567
+      md5: fa17b44e292f415c4237726c77c7eaf6
+      size: 2782
+    params:
+      params.yaml:
+        train:
+          model_type: GradientBoosting
+          n_estimators: 100
+          learning_rate: 0.1
+          max_depth: 3
+          random_state: 42
     outs:
-    - path: metrics.json
+    - path: metrics/train_metrics.json
       hash: md5
-      md5: 0a52c1fcf61a6e06696b982066f1e730
-      size: 105
+      md5: 788d5d1bfe44252e8837bae23878b1db
+      size: 113
     - path: models/model.pkl
       hash: md5
       md5: bc38765e4883734c6168ea322bf07c9e
@@ -59,6 +80,10 @@ stages:
       hash: md5
       md5: 71b762a73c32792055429e542d0394f3
       size: 51356
+    - path: data/processed/X_train.csv
+      hash: md5
+      md5: 63f0459ae4f3d2828828a33ba9c2c2f7
+      size: 204779
     - path: data/processed/y_test.csv
       hash: md5
       md5: 32e3385823d7bcd25d1e744a2502c2c0
@@ -69,10 +94,14 @@ stages:
       size: 140168
     - path: src/evaluate.py
       hash: md5
-      md5: 04078554389877a4ce3186d3ff135c1c
-      size: 2902
+      md5: 05e5300f131038c27a5a558f5567aefb
+      size: 3564
     outs:
+    - path: metrics/eval_metrics.json
+      hash: md5
+      md5: b674da2451377cf561510e4d9ab4348b
+      size: 100
     - path: plots/confusion_matrix.png
       hash: md5
-      md5: 424b8ca697bdb326bd7942badcf94126
-      size: 34141
+      md5: d5c3139f86e7d5953d4d532ca8ae0656
+      size: 16006
