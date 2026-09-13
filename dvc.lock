@@ -9,7 +9,7 @@ stages:
       size: 94274
     - path: src/preprocess.py
       hash: md5
-      md5: b1357bfaec45902355d5afc1ebad501b
+      md5: 76481b547bf6c59232ca686a34dcb50a
       size: 2519
     params:
       params.yaml:
@@ -37,7 +37,7 @@ stages:
       hash: md5
       md5: f5141b4fd45225cd8894dc7eef98c624
       size: 307
-    - path: models/scaler.pkl
+    - path: models/scalar.pkl
       hash: md5
       md5: c3bd06d3f19c4b58bd8521a02e967cc8
       size: 1423
