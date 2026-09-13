@@ -1,0 +1,23 @@
+artifact_path: /Users/gowtham/Documents/Gowtham/GUVI/Notebook/Module_16/session_1/mlruns/1/models/m-6d28c257b0774ef78fb82f2991561025/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.12.2
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types: null
+mlflow_version: 3.16.0
+model_id: m-6d28c257b0774ef78fb82f2991561025
+model_size_bytes: 8963
+model_uuid: m-6d28c257b0774ef78fb82f2991561025
+prompts: null
+run_id: 24cd2524cb124eea89c4b0299f7f63b6
+utc_time_created: '2026-09-12 12:26:55.620301'

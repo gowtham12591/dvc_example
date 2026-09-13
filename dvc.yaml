@@ -1,0 +1,34 @@
+stages:
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+      - data/churn_data.csv
+      - src/preprocess.py
+    outs:
+      - data/processed/X_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_train.csv
+      - data/processed/y_test.csv
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - src/train.py
+    outs:
+      - models/model.pkl
+    metrics:
+      - metrics.json:
+          cache: false
+
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - models/model.pkl
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - src/evaluate.py
+    plots:
+      - plots/confusion_matrix.png:
+          cache: false
