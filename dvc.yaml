@@ -1,34 +1,52 @@
+
+# For creating ML pipeline
+
 stages:
   preprocess:
     cmd: python src/preprocess.py
     deps:
       - data/churn_data.csv
       - src/preprocess.py
+    params:
+      - params.yaml:
+          - preprocess
     outs:
       - data/processed/X_train.csv
       - data/processed/X_test.csv
       - data/processed/y_train.csv
       - data/processed/y_test.csv
-
+      - models/scalar.pkl
+      - models/feature_columns.json
+  
   train:
     cmd: python src/train.py
     deps:
       - data/processed/X_train.csv
       - data/processed/y_train.csv
       - src/train.py
+    params:
+      - params.yaml:
+          - train
     outs:
       - models/model.pkl
     metrics:
-      - metrics.json:
+      - metrics/train_metrics.json:
           cache: false
 
   evaluate:
     cmd: python src/evaluate.py
     deps:
-      - models/model.pkl
       - data/processed/X_test.csv
       - data/processed/y_test.csv
+      - data/processed/X_train.csv
+      - models/model.pkl
       - src/evaluate.py
+    metrics:
+      - metrics/eval_metrics.json:
+          cache: false
     plots:
       - plots/confusion_matrix.png:
           cache: false
+
+
+

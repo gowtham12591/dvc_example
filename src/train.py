@@ -1,84 +1,84 @@
 """
-train.py - Model Training Stage
-=================================
-This script loads preprocessed data, trains a Gradient Boosting model,
-and saves the model + metrics.
-
-Usage:
-    python src/train.py
-
-DVC Pipeline Stage:
-    This is Stage 2 in our ML pipeline (preprocess -> train -> evaluate)
+Stage 2 of DVC pipeline: Model Training with MLflow tracking.
+Trains a GradientBoostingClassifier using parameters from params.yaml.
+Logs metrics and the model to MLflow, and saves the model locally.
 """
 
-import pandas as pd
-import json
 import os
+import yaml
+import json
 import joblib
+import pandas as pd
+import mlflow
+import mlflow.sklearn
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-
 def train():
-    """Train a Gradient Boosting model and save model + metrics."""
+    print("Starting Training Stage...")
     
-    print("=" * 50)
-    print("STAGE 2: TRAINING")
-    print("=" * 50)
+    # Load parameters
+    with open('params.yaml', 'r') as f:
+        params = yaml.safe_load(f)['train']
+        
+    print("Parameters loaded successfully.")
     
-    # Step 1: Load preprocessed data
-    print("\n[1/4] Loading preprocessed data ...")
-    X_train = pd.read_csv("data/processed/X_train.csv")
-    y_train = pd.read_csv("data/processed/y_train.csv").squeeze()
-    print(f"       Training samples: {X_train.shape[0]}, Features: {X_train.shape[1]}")
+    # Load processed data
+    print("Loading processed training data...")
+    X_train = pd.read_csv('data/processed/X_train.csv')
+    y_train = pd.read_csv('data/processed/y_train.csv').squeeze()
     
-    # Step 2: Define hyperparameters
-    print("[2/4] Setting hyperparameters ...")
-    params = {
-        "n_estimators": 100,
-        "learning_rate": 0.1,
-        "max_depth": 3,
-        "random_state": 42
-    }
-    for k, v in params.items():
-        print(f"       {k}: {v}")
+    # MLflow tracking
+    print("Setting up MLflow tracking...")
+    mlflow.set_tracking_uri('sqlite:///mlflow.db')
+    mlflow.set_experiment('churn-prediction-session2')
     
-    # Step 3: Train the model
-    print("[3/4] Training Gradient Boosting Classifier ...")
-    model = GradientBoostingClassifier(**params)
-    model.fit(X_train, y_train)
-    
-    # Evaluate on training data
-    y_train_pred = model.predict(X_train)
-    train_metrics = {
-        "train_accuracy": round(accuracy_score(y_train, y_train_pred), 4),
-        "train_precision": round(precision_score(y_train, y_train_pred), 4),
-        "train_recall": round(recall_score(y_train, y_train_pred), 4),
-        "train_f1": round(f1_score(y_train, y_train_pred), 4),
-    }
-    
-    print("       Training Metrics:")
-    for k, v in train_metrics.items():
-        print(f"         {k}: {v}")
-    
-    # Step 4: Save model and metrics
-    print("[4/4] Saving model and metrics ...")
-    os.makedirs("models", exist_ok=True)
-    joblib.dump(model, "models/model.pkl")
-    
-    # Save metrics as JSON (DVC tracks this file)
-    with open("metrics.json", "w") as f:
-        json.dump(train_metrics, f, indent=2)
-    
-    # Save hyperparameters for reference
-    with open("params.json", "w") as f:
-        json.dump(params, f, indent=2)
-    
-    print("\nTraining complete!")
-    print(f"  Saved: models/model.pkl")
-    print(f"  Saved: metrics.json")
-    print(f"  Saved: params.json")
+    run_name = f'GBM-{params["n_estimators"]}trees'
+    with mlflow.start_run(run_name=run_name):
+        print(f"Started MLflow run: {run_name}")
+        
+        # Log parameters and tags
+        mlflow.log_params(params)
+        mlflow.set_tag('developer', 'Gowtham')
+        mlflow.set_tag('model_type', params['model_type'])
+        
+        # Train model
+        print("Training GradientBoostingClassifier...")
+        model = GradientBoostingClassifier(
+            n_estimators=params['n_estimators'],
+            learning_rate=params['learning_rate'],
+            max_depth=params['max_depth'],
+            random_state=params['random_state']
+        )
+        model.fit(X_train, y_train)
+        
+        # Predict on training data
+        print("Evaluating on training data...")
+        y_pred = model.predict(X_train)
+        
+        # Calculate metrics
+        metrics = {
+            'accuracy': accuracy_score(y_train, y_pred),
+            'precision': precision_score(y_train, y_pred),
+            'recall': recall_score(y_train, y_pred),
+            'f1_score': f1_score(y_train, y_pred)
+        }
+        
+        # Log to MLflow
+        mlflow.log_metrics(metrics)
+        mlflow.sklearn.log_model(model, 'model')
+        
+        # Save locally
+        os.makedirs('models', exist_ok=True)
+        joblib.dump(model, 'models/model.pkl')
+        print("Model saved to models/model.pkl.")
+        
+        os.makedirs('metrics', exist_ok=True)
+        with open('metrics/train_metrics.json', 'w') as f:
+            json.dump(metrics, f)
+        print("Training metrics saved to metrics/train_metrics.json.")
+        
+    print("Training Stage completed successfully.")
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     train()

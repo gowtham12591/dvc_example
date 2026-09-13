@@ -5,3 +5,6 @@ quiz
 takeaway
 .venv
 mlflow.db
+data/processed
+models
+

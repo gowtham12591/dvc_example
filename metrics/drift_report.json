@@ -1,0 +1,30 @@
+[
+    {
+        "column": "tenure",
+        "train_mean": -1.2878587085651815e-16,
+        "test_mean": 0.17697644281031685,
+        "drift_pct": 17.68657961786764,
+        "status": "OK"
+    },
+    {
+        "column": "monthly_charges",
+        "train_mean": 7.105427357601002e-17,
+        "test_mean": -0.00961667998367794,
+        "drift_pct": 0.9610667583208985,
+        "status": "OK"
+    },
+    {
+        "column": "total_charges",
+        "train_mean": -3.9968028886505634e-17,
+        "test_mean": 0.17781164631241161,
+        "drift_pct": 17.77004775070129,
+        "status": "OK"
+    },
+    {
+        "column": "num_tickets",
+        "train_mean": -2.6645352591003756e-17,
+        "test_mean": 0.06849717591254417,
+        "drift_pct": 6.845435110676065,
+        "status": "OK"
+    }
+]

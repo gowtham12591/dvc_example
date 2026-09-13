@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Predictor - MLOps Demo</title>
+    <style>
+        :root {
+            --primary: #00B4D8;
+            --primary-hover: #0096b4;
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(0, 180, 216, 0.3);
+        }
+
+        button {
+            grid-column: 1 / -1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            font-size: 18px;
+        }
+
+        .churn-result {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .nochurn-result {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .error-result {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .probability {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Customer Churn Predictor</h1>
+    
+    <form id="prediction-form">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="tenure">Tenure</label>
+                <input type="number" id="tenure" name="tenure" placeholder="Months with company" required min="0">
+            </div>
+
+            <div class="form-group">
+                <label for="monthly_charges">Monthly Charges</label>
+                <input type="number" id="monthly_charges" name="monthly_charges" step="0.01" placeholder="e.g., 65.50" required min="0">
+            </div>
+
+            <div class="form-group">
+                <label for="total_charges">Total Charges</label>
+                <input type="number" id="total_charges" name="total_charges" step="0.01" placeholder="e.g., 786.00" required min="0">
+            </div>
+
+            <div class="form-group">
+                <label for="num_tickets">Number of Support Tickets</label>
+                <input type="number" id="num_tickets" name="num_tickets" required min="0" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="contract_type">Contract Type</label>
+                <select id="contract_type" name="contract_type" required>
+                    <option value="Month-to-Month">Month-to-Month</option>
+                    <option value="One Year">One Year</option>
+                    <option value="Two Year">Two Year</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="internet_service">Internet Service</label>
+                <select id="internet_service" name="internet_service" required>
+                    <option value="Fiber Optic">Fiber Optic</option>
+                    <option value="DSL">DSL</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="online_security">Online Security</label>
+                <select id="online_security" name="online_security" required>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="tech_support">Tech Support</label>
+                <select id="tech_support" name="tech_support" required>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="payment_method">Payment Method</label>
+                <select id="payment_method" name="payment_method" required>
+                    <option value="Electronic Check">Electronic Check</option>
+                    <option value="Mailed Check">Mailed Check</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Credit Card">Credit Card</option>
+                </select>
+            </div>
+
+            <button type="submit" id="submit-btn">Predict Churn</button>
+        </div>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const resultDiv = document.getElementById('result');
+        
+        // Show loading state
+        submitBtn.textContent = 'Predicting...';
+        submitBtn.disabled = true;
+        
+        // Gather data
+        const formData = new FormData(this);
+        const data = {
+            tenure: parseInt(formData.get('tenure')),
+            monthly_charges: parseFloat(formData.get('monthly_charges')),
+            total_charges: parseFloat(formData.get('total_charges')),
+            num_tickets: parseInt(formData.get('num_tickets')),
+            contract_type: formData.get('contract_type'),
+            internet_service: formData.get('internet_service'),
+            online_security: formData.get('online_security'),
+            tech_support: formData.get('tech_support'),
+            payment_method: formData.get('payment_method')
+        };
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            
+            resultDiv.style.display = 'block';
+
+            if (response.ok) {
+                const probabilityPct = (result.churn_probability * 100).toFixed(1);
+                const isChurn = result.prediction === 'Churn';
+                
+                resultDiv.className = isChurn ? 'churn-result' : 'nochurn-result';
+                resultDiv.innerHTML = `
+                    <h3>Prediction: <strong>${result.prediction}</strong></h3>
+                    <div class="probability">${probabilityPct}% Probability</div>
+                    <p>Confidence: ${result.confidence}</p>
+                `;
+            } else {
+                resultDiv.className = 'error-result';
+                resultDiv.innerHTML = `<p>Error: ${result.error || 'An error occurred'}</p>`;
+            }
+        } catch (error) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'error-result';
+            resultDiv.innerHTML = '<p>Error connecting to the server.</p>';
+        } finally {
+            // Restore button
+            submitBtn.textContent = 'Predict Churn';
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
